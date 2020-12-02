@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {View,Text,StyleSheet} from 'react-native';
+import {View,Text,StyleSheet,FlatList,ScrollView} from 'react-native';
 import {SearchBar,Header}from 'react-native-elements'
 import db from '../config'
 
@@ -14,6 +14,8 @@ export default class ReadStory extends React.Component{
     }
   }
 
+
+
   update=(search)=>{
 this.setState({search})
   }
@@ -26,6 +28,25 @@ const ItemData = item.title? item.title.toUpperCase(): ' '.toUpperCase()
 const textData = text.toUpperCase()
 return ItemData.indexOf(textData)>-1
 })
+}
+
+getStories=()=>{
+  try{
+    var allStories = db.collection('Stories').get()
+    .then(querySnapshot=>{
+      querySnapshot.forEach(doc=>{
+        allStories.push(doc.data())
+        console.log(allStories)
+      })
+      this.setState({allStories})
+    })
+  }
+  catch(error){
+    console.log(error)
+  }
+}
+componentDidMount(){
+  this.getStories()
 }
   render(){
     return(
@@ -48,6 +69,17 @@ return ItemData.indexOf(textData)>-1
           value = {this.state.search}
           />
           </View>
+
+          <FlatList 
+          data = {this.state.search===" "? this.state.allStories:this.state.dataSource}
+          renderItem = {({item})=>(
+            <View style = {styles.itemContainer}>
+              <Text>Title : {item.title}</Text>
+          <Text>Author : {item.author}</Text>
+              </View>
+          )}
+          keyExtractor = {(item,index)=>index.toString()}
+          />
       </View>
     )
   }
@@ -57,5 +89,13 @@ const styles = StyleSheet.create({
   container:{
     flex:1,
     
+  },
+  itemContainer : {
+    height :80,
+    width:'100%',
+    borderWidth : 2,
+    borderColor : 'grey',
+    justifyContent:'center',
+    alignSelf : 'center'
   }
 })
